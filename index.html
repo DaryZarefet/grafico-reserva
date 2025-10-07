@@ -84,7 +84,7 @@
         flex-direction: column;
         gap: var(--gap-y);
         width: var(--hex-size);
-        pointer-events: none; /* anchors seguirán recibiendo eventos */
+        pointer-events: none; /* anchors will still receive events */
       }
 
   /* anchor that contains SVG (captures pointer-events) */
@@ -248,10 +248,10 @@
       const gapX = getCssPx("--gap-x", 0);
       const gapY = getCssPx("--gap-y", 8);
 
-      /* paso horizontal ideal para flat-top hex: 0.75 * ancho */
+      /* ideal horizontal step for flat-top hex: 0.75 * width */
       const stepX = hexW * 0.75 + gapX;
 
-      /* distribuir por columna según item.col (fallback round-robin) */
+      /* distribute by column according to item.col (fallback round-robin) */
       const cols = Array.from({ length: columns }, () => []);
       for (let i = 0; i < data.length; i++) {
         const item = data[i];
@@ -260,7 +260,7 @@
         else cols[i % columns].push(item);
       }
 
-      /* ajustar tamaño del contenedor para que no corte nada */
+      /* adjust container size so it doesn't clip anything */
       const maxColLen = Math.max(...cols.map((c) => c.length));
       const maxOffset = Math.max(...columnStartOffsets, 0);
       const boardWidth = Math.ceil(stepX * (columns - 1) + hexW + 40);
@@ -268,7 +268,7 @@
       board.style.width = boardWidth + "px";
       board.style.height = boardHeight + "px";
 
-      /* polygon points para el hex (flat-top) */
+      /* polygon points for the hex (flat-top) */
       const hexPoints = "25,0 75,0 100,43.301 75,86.602 25,86.602 0,43.301";
 
       /* SVG defs: gradient + subtle internal highlight + soft filter */
@@ -301,21 +301,21 @@
           </filter>
         </defs>`;
 
-      /* helper: escapar texto para insertar en title (aunque ya limpiamos con escapeHtml) */
+      /* helper: escape text for insertion into title (although we already sanitize with escapeHtml) */
       function escapeHtml(s) {
         return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       }
 
-      /* --- función avanzada para crear texto SVG adaptativo --- */
+      /* --- advanced function to create adaptive SVG text --- */
       function appendAdaptiveText(svgEl, textStr) {
         const SVG_NS = "http://www.w3.org/2000/svg";
-        const maxWidth = 78; // user units inside viewBox (100 wide) -> deja márgenes laterales
+        const maxWidth = 78; // user units inside viewBox (100 wide) -> leaves side margins
         let fontSize = 9; // inicial (user units)
         const minFontSize = 5;
 
-        // Clase que aplica fill/family/weight; font-size lo controlamos por atributo (user units)
-        // Creamos un texto temporal para medir
-        //Estos determinan el centrado
+        // Class that applies fill/family/weight; font-size is controlled by attribute (user units)
+        // Create a temporary text node for measurement
+        // These determine centering
         const tmp = document.createElementNS(SVG_NS, "text");
         tmp.setAttribute("x", "50");
         tmp.setAttribute("text-anchor", "middle");
@@ -326,7 +326,7 @@
         tmp.textContent = textStr;
         svgEl.appendChild(tmp);
 
-        // medir y reducir si hace falta
+        // measure and shrink if needed
         let len = tmp.getComputedTextLength();
         while (len > maxWidth && fontSize > minFontSize) {
           fontSize -= 0.5;
@@ -334,13 +334,13 @@
           len = tmp.getComputedTextLength();
         }
 
-        // quitamos tmp (iremos a crear el grupo final)
+        // remove tmp (we will create the final group)
         svgEl.removeChild(tmp);
 
-        // envuelve en <g> para luego centrar todo el bloque como unidad
+        // wrap in <g> to later center the whole block as a unit
         const g = document.createElementNS(SVG_NS, "g");
 
-        // intentamos single line — si cabe, lo ponemos en un tspan simple
+        // try single line — if it fits, put it in a simple tspan
         const single = document.createElementNS(SVG_NS, "text");
         single.setAttribute("x", "50");
         single.setAttribute("text-anchor", "middle");
@@ -348,13 +348,13 @@
         single.setAttribute("font-size", fontSize);
         single.textContent = textStr;
 
-        // medir single line
+        // measure single line
         svgEl.appendChild(single);
         const singleLen = single.getComputedTextLength();
         svgEl.removeChild(single);
 
         if (singleLen <= maxWidth) {
-          // cabe en una línea: insertamos text dentro del grupo con una tspan y lo centraremos por getBBox
+          // fits on one line: insert text inside the group with a tspan and center later via getBBox
           const textEl = document.createElementNS(SVG_NS, "text");
           textEl.setAttribute("x", "50");
           textEl.setAttribute("text-anchor", "middle");
@@ -363,19 +363,19 @@
 
           const tspan = document.createElementNS(SVG_NS, "tspan");
           tspan.setAttribute("x", "50");
-          // colocamos una y provisional; el grupo se centrará tras medir
+          // set a provisional y; the group will be centered after measuring
           tspan.setAttribute("y", String((43.301).toFixed(2)));
           tspan.textContent = textStr;
           textEl.appendChild(tspan);
           g.appendChild(textEl);
           svgEl.appendChild(g);
         } else {
-          // no cabe: wrapping greedy por palabras
+          // doesn't fit: greedy word wrapping
           const words = textStr.split(/\s+/);
           const lines = [];
           let line = "";
 
-          // tester para medir candidatos (con fontSize ya reducido)
+          // tester to measure candidates (with already reduced fontSize)
           const tester = document.createElementNS(SVG_NS, "text");
           tester.setAttribute("x", "50");
           tester.setAttribute("text-anchor", "middle");
@@ -396,7 +396,7 @@
           if (line) lines.push(line);
           svgEl.removeChild(tester);
 
-          // si demasiadas líneas, intentar reducir un poco más la fuente y recomponer
+          // if too many lines, try to reduce font a bit more and rewrap
           if (lines.length > 3) {
             let attempts = 0;
             while (lines.length > 3 && fontSize > minFontSize && attempts < 6) {
@@ -434,17 +434,17 @@
             }
           }
 
-          // crear elemento final con tspans dentro de un <text> y añadirlo al grupo
+          // create final element with tspans inside a <text> and add it to the group
           const finalText = document.createElementNS(SVG_NS, "text");
           finalText.setAttribute("x", "50");
           finalText.setAttribute("text-anchor", "middle");
           finalText.setAttribute("class", "hex-text");
           finalText.setAttribute("font-size", fontSize);
 
-          // provisional startY (será ajustado centrando el grupo)
+          // provisional startY (will be adjusted by centering the group)
           const lineHeight = 1.05 * fontSize;
           const totalHeight = lines.length * lineHeight;
-          const centerY = 43.301; // centro geométrico del viewBox 0..86.602
+          const centerY = 43.301; // geometric center of the viewBox 0..86.602
           const provisionalStartY = centerY - totalHeight / 2 + lineHeight / 2;
           finalText.setAttribute("y", String(provisionalStartY.toFixed(2)));
 
@@ -452,7 +452,7 @@
             const tspan = document.createElementNS(SVG_NS, "tspan");
             tspan.setAttribute("x", "50");
             if (idx === 0) {
-              // usamos la 'y' del padre
+              // we use the parent's 'y'
             } else {
               tspan.setAttribute("dy", "1.05em");
             }
@@ -464,7 +464,7 @@
           svgEl.appendChild(g);
         }
 
-        // --- centrar el grupo (g) perfectamente dentro del viewBox usando getBBox() ---
+        // --- perfectly center the group (g) inside the viewBox using getBBox() ---
         const doCenterGroup = () => {
           try {
             const vb = svgEl.viewBox.baseVal;
@@ -477,7 +477,7 @@
             const dy = centerY - bboxCenterY;
             g.setAttribute("transform", `translate(${dx.toFixed(2)}, ${dy.toFixed(2)})`);
           } catch (err) {
-            // si getBBox falla por alguna razón, dejamos el texto tal cual
+            // if getBBox fails for any reason, leave the text as-is
             console.warn("Centrado de grupo falló:", err);
           }
         };
@@ -489,7 +489,7 @@
         }
       }
 
-      /* Construir columnas */
+      /* Build columns */
       cols.forEach((colItems, colIndex) => {
         const col = document.createElement("div");
         col.className = "column";
@@ -514,7 +514,7 @@
           const cleanTitle = escapeHtml(item.title);
           const baseColor = escapeHtml(item.color || "#2b6cb0");
 
-          // crear el SVG sin el <text> (lo añadiremos con appendAdaptiveText)
+          // create the SVG without the <text> (we will add it with appendAdaptiveText)
           a.innerHTML = `
             <svg class="hex-svg" viewBox="0 0 100 86.602" role="img" aria-hidden="false" focusable="false">
               ${svgDefs}
@@ -537,7 +537,7 @@
         board.appendChild(col);
       });
 
-      // después de renderizar el DOM, recorremos cada svg y añadimos el texto adaptativo
+      // after rendering the DOM, iterate each svg and add the adaptive text
       // small timeout to ensure layout is stable (but immediate is usually fine)
       requestAnimationFrame(() => {
         document.querySelectorAll(".hex-svg").forEach((svgEl, idx) => {
@@ -549,7 +549,7 @@
         });
       });
 
-      /* Si cambias CSS variables por media queries, recarga para recalcular posiciones */
+      /* If you change CSS variables via media queries, reload to recalculate positions */
       let resizeTimer;
       window.addEventListener("resize", () => {
         clearTimeout(resizeTimer);
