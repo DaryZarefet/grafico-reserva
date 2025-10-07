@@ -6,11 +6,11 @@
     <title>Panales — profundidad mejorada</title>
     <style>
       :root {
-        --hex-size: 120px; /* ancho base */
+  --hex-size: 120px; /* base width */
         --gap-x: 6px;
         --gap-y: 6px;
 
-        /* ajustes por capa (puedes afinar) */
+  /* per-layer adjustments (you can fine-tune) */
         /* --layer0-translate: 0px;*/
         --layer0-translate: 0px;
         --layer0-scale: 1;
@@ -23,7 +23,7 @@
         --layer1-shadow-x: 5px;
         --layer1-shadow-y: 15px;
         --layer1-shadow-blur: 5px;
-        --layer1-shadow-opacity: 0.5;
+        --layer1-shadow-opacity: 0.8;
 
         --layer2-translate: -6px;
         --layer2-scale: 1.04;
@@ -68,7 +68,7 @@
         margin: 8px 0 18px 0;
       }
 
-      /* contenedor relativo para posicionamiento absolute de columnas */
+  /* relative container for absolute-positioned columns */
       .board {
         position: relative;
         width: 100%;
@@ -77,7 +77,7 @@
         overflow: visible;
       }
 
-      /* columna posicionada por JS */
+  /* column positioned by JS */
       .column {
         position: absolute;
         display: flex;
@@ -87,7 +87,7 @@
         pointer-events: none; /* anchors seguirán recibiendo eventos */
       }
 
-      /* anchor que contiene SVG (captura pointer-events) */
+  /* anchor that contains SVG (captures pointer-events) */
       .hex-link {
         pointer-events: auto;
         display: inline-block;
@@ -101,7 +101,7 @@
         -webkit-tap-highlight-color: transparent;
       }
 
-      /* estilos aplicados según capa (controladas por JS colocando la clase layer-N) */
+  /* styles applied per layer (controlled by JS adding class layer-N) */
       .layer-0 {
         transform: translateY(var(--layer0-translate)) scale(var(--layer0-scale));
         z-index: 10;
@@ -117,7 +117,7 @@
         filter: drop-shadow(var(--layer1-shadow-x) var(--layer1-shadow-y) var(--layer2-shadow-blur) rgba(12, 20, 30, var(--layer2-shadow-opacity)));
       }
 
-      /* hover: elevación extra (resta 6px al translateY actual) y ligero escalado */
+  /* hover: extra lift (subtracts 6px from current translateY) and slight scale */
       .hex-link:hover.layer-0 {
         transform: translateY(calc(var(--layer0-translate) - 6px)) scale(calc(var(--layer0-scale) * 1.03));
       }
@@ -128,14 +128,14 @@
         transform: translateY(calc(var(--layer2-translate) - 6px)) scale(calc(var(--layer2-scale) * 1.035));
       }
 
-      /* SVG ajustes */
+  /* SVG adjustments */
       .hex-svg {
         width: 100%;
         height: 100%;
         display: block;
       }
 
-      /* clase para el texto SVG: fallback sizing + visual */
+  /* class for the SVG text: fallback sizing + visual */
       .hex-text {
         font-weight: 700;
         /* fallback responsive size using css clamp (applies in browsers that use CSS for SVG text) */
@@ -145,7 +145,7 @@
         font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
       }
 
-      /* responsive */
+  /* responsive */
       @media (max-width: 900px) {
         :root {
           --hex-size: 92px;
